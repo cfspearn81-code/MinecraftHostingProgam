@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><ItemGroup><ProjectReference Include="../Harbor.Core/Harbor.Core.csproj"/><ProjectReference Include="../Harbor.Foundation/Harbor.Foundation.csproj"/></ItemGroup></Project>
