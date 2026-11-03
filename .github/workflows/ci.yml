@@ -1,0 +1,32 @@
+name: Build and verify
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.402
+      - run: dotnet restore Harbor.sln
+      - run: dotnet build Harbor.sln -c Release --no-restore
+      - run: dotnet run --project tests/Harbor.Tests -c Release --no-build
+      - name: Publish portable x64 preview
+        run: |
+          dotnet publish src/Harbor.App -c Release -r linux-x64 --self-contained true -o artifacts/harbor/app
+          dotnet publish tools/Harbor.Cli -c Release -r linux-x64 --self-contained true -o artifacts/harbor/cli
+          cp packaging/harbor packaging/harbor.svg packaging/install-desktop.sh packaging/uninstall-desktop.sh artifacts/harbor/
+          chmod +x artifacts/harbor/harbor
+          tar -C artifacts -czf harbor-linux-x64.tar.gz harbor
+          sha256sum harbor-linux-x64.tar.gz > harbor-linux-x64.tar.gz.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: harbor-linux-x64-preview
+          path: |
+            harbor-linux-x64.tar.gz
+            harbor-linux-x64.tar.gz.sha256
