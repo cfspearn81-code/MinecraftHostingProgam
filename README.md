@@ -40,7 +40,7 @@ Server data is in `$XDG_DATA_HOME/harbor`, or `~/.local/share/harbor` when unset
 
 ## Packaging and uninstall
 
-CI attempts a self-contained `linux-x64` preview artifact with SHA-256. Alternatively:
+CI built a self-contained `linux-x64` preview artifact with SHA-256 in [this run](https://github.com/cfspearn81-code/MinecraftHostingProgam/actions/runs/41665317874). It is not a tested desktop release; download it from the run artifacts if you have access. Alternatively:
 
 ```sh
 mkdir -p artifacts/harbor
