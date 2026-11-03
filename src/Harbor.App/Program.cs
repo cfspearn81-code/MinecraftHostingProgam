@@ -138,11 +138,13 @@ public sealed class MainWindow : Window
     {
         try
         {
-            backupItems = await Task.Run(() => backups.ListAsync(id));
+            var result = await Task.Run(() => backups.ListAsync(id));
+            if (selected?.Id != id) return;
+            backupItems = result;
             backupList.ItemsSource = backupItems.Select(x => $"{x.ModifiedUtc:yyyy-MM-dd HH:mm} UTC  ·  {x.Bytes:N0} bytes  ·  {x.Id}").ToArray();
             backupStatus.Text = backupItems.Count == 0 ? "No world backups yet." : $"{backupItems.Count} world backup(s).";
         }
-        catch (Exception ex) { backupItems = Array.Empty<WorldBackups.Backup>(); backupList.ItemsSource = null; backupStatus.Text = ex.Message; }
+        catch (Exception ex) { if (selected?.Id != id) return; backupItems = Array.Empty<WorldBackups.Backup>(); backupList.ItemsSource = null; backupStatus.Text = ex.Message; }
     }
     private async Task RunBackupOperationAsync(Func<CancellationToken, Task<string>> action)
     {

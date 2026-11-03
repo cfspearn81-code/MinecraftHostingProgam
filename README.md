@@ -1,6 +1,6 @@
 # Harbor (early development preview)
 
-Harbor is intended to be a local Minecraft Java server manager for Kubuntu. **This is an incomplete initial implementation, not a finished or verified desktop product.** The desktop is a read-only inventory; installation and lifecycle operations are currently CLI-only. Do not use it with valuable worlds without independent backups. See [release report](docs/RELEASE-REPORT.md) and [progress](docs/PROGRESS.md) for the precise scope and outstanding work.
+Harbor is intended to be a local Minecraft Java server manager for Kubuntu. **This is an incomplete initial implementation, not a finished or verified desktop product.** The desktop offers a server inventory and default-world backup controls; server installation and lifecycle operations are currently CLI-only. Do not use it with valuable worlds without independent backups. See [release report](docs/RELEASE-REPORT.md) and [progress](docs/PROGRESS.md) for the precise scope and outstanding work.
 
 ## Requirements and build
 
@@ -44,7 +44,7 @@ With a stopped server and its default `world/level.dat` present, run `dotnet run
 
 ## Packaging and uninstall
 
-CI built a self-contained `linux-x64` preview artifact with SHA-256 in [this run](https://github.com/cfspearn81-code/MinecraftHostingProgam/actions/runs/41665317874). It is not a tested desktop release; download it from the run artifacts if you have access. Alternatively:
+CI built a self-contained `linux-x64` preview artifact with SHA-256 in [this run](https://github.com/cfspearn81-code/MinecraftHostingProgam/actions/runs/41666453944). It is not a tested desktop release; download it from the run artifacts if you have access. Alternatively:
 
 ```sh
 mkdir -p artifacts/harbor
@@ -63,4 +63,4 @@ Extract into a permanent user-owned directory and run `harbor/harbor`. `harbor/i
 - Download/checksum failures: check connectivity and retry `install`; partial downloads are removed. Mojang publishes SHA-1 for this artifact; SHA-1 is used to match that published checksum, not as a modern signature.
 - Port conflict: stop the conflicting service or create a server with another port. A port can be taken after the preflight check; inspect real startup output.
 - EULA/startup failure: inspect the console and the server's own logs; do not accept an agreement automatically.
-- The desktop is read-only and cannot stop servers. Do not start long-lived servers from a terminal you intend to close; background hosting and safe app-wide shutdown are not implemented.
+- The desktop cannot start or stop servers. Do not start long-lived servers from a terminal you intend to close; background hosting and safe app-wide shutdown are not implemented.
