@@ -10,3 +10,9 @@
 - Next concrete task: run CI and correct compile/runtime failures, then on a networked Kubuntu host run the opt-in real vanilla proof without automatic EULA acceptance; close the process ownership crash window before expanding lifecycle operations.
 
 Unresolved: all user-requested features beyond this narrow initial slice; see RELEASE-REPORT.md. No screenshot, portable binary, live Minecraft output, GUI accessibility test, or native dependencies verification was produced locally.
+
+## 2026-11-03 — world-only backup milestone in progress
+
+- Added CLI creation, listing, confirmed restoration and confirmed deletion of world-only snapshots. Archives contain a manifest and per-file SHA-256 hashes; restoration validates into a staging directory and creates a recovery snapshot before replacement. Operations use the existing server lock and survivor check.
+- These snapshots include only the default `world/` directory, including its nested dimensions. They exclude configuration, server JAR, mods, player lists and other server files; they are not full-server backups. Custom level-name directories, external world import/export, and Bedrock conversion are not supported. 4 GiB uncompressed and 100,000-file limits apply. Disk-space failures abort staging or the recovery backup before replacement; there is no proactive free-space estimate. Crash recovery of an interrupted directory swap is manual via the `.world-previous-*` folder and recovery backup. No safety guarantee against a separate hostile local user racing filesystem operations is made.
+- Added fixture tests for round trip, recovery, malicious paths, symlink rejection and cancellation; CI must validate the new code. Real Minecraft worlds are still untested.

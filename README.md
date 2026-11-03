@@ -38,6 +38,10 @@ The proof expects real readiness output and a real `list` response before reques
 
 Server data is in `$XDG_DATA_HOME/harbor`, or `~/.local/share/harbor` when unset. The application never requires sudo. `server.properties` is created with online authentication enabled and the selected port. The server may bind LAN interfaces by default: a different device needs the host's LAN address and port. Internet access needs separate routing/firewall decisions; LAN presence does not prove public reachability. UFW, router forwarding, dynamic IP, CGNAT and IPv6 can affect access. Harbor does not modify any of them. A sleeping, logged-out, or powered-off laptop cannot reliably host: no sleep settings are changed.
 
+## World-only snapshots (CLI)
+
+With a stopped server and its default `world/level.dat` present, run `dotnet run --project tools/Harbor.Cli -- backup "$ID"`, then `backups "$ID"` to list IDs. Restore with `restore "$ID" <backup-id>` and type `RESTORE` when prompted; this first creates another world-only recovery snapshot. Delete with `delete-backup "$ID" <backup-id>` and the explicit `DELETE` confirmation. These snapshots cover the default `world/` directory (including nested dimensions), **not** configuration, mods, server JARs or full server data. Other level-name paths, world import/export and Bedrock conversion are not supported. Snapshots are limited to 4 GiB uncompressed and 100,000 files; symlinks are rejected. Stop any external process that edits the world. Keep independent backups: a crash during the folder swap can leave a `.world-previous-*` folder for manual recovery. Disk-full errors should stop before replacement, but proactive space checks are not implemented.
+
 ## Packaging and uninstall
 
 CI built a self-contained `linux-x64` preview artifact with SHA-256 in [this run](https://github.com/cfspearn81-code/MinecraftHostingProgam/actions/runs/41665317874). It is not a tested desktop release; download it from the run artifacts if you have access. Alternatively:

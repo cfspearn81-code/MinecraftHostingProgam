@@ -15,6 +15,10 @@ Usage (optionally set XDG_DATA_HOME to choose a data location):
   accept-eula <server-id>               Explicit interactive EULA acceptance
   run <server-id>                       Run with interactive console
   proof <server-id>                     Start, observe list response, stop
+  backup <server-id>                    Snapshot the default world (stopped only)
+  backups <server-id>                   List world snapshots
+  restore <server-id> <backup-id>       Replace default world after confirmation
+  delete-backup <server-id> <backup-id> Delete a snapshot after confirmation
 All server data is local. Read https://aka.ms/MinecraftEULA before acceptance.
 """;
 using var cancel = new CancellationTokenSource();
@@ -25,6 +29,7 @@ try
     var store = new ServerStore();
     using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
     var installer = new VanillaInstaller(http, store);
+    var backups = new WorldBackups(store);
     Guid Id(int i) => args.Length > i && Guid.TryParse(args[i], out var id) ? id : throw new ArgumentException("Provide a valid server ID.");
     switch (args[0])
     {
@@ -57,6 +62,20 @@ try
             break;
         case "run" or "proof" when args.Length == 2:
             await new ServerRunner(store).RunAsync(await store.LoadAsync(Id(1), cancel.Token), args[0] == "proof", cancel.Token); break;
+        case "backup" when args.Length == 2:
+            Console.WriteLine($"Created world-only backup: {await backups.CreateAsync(Id(1), cancel.Token)}"); break;
+        case "backups" when args.Length == 2:
+            foreach (var b in await backups.ListAsync(Id(1), cancel.Token)) Console.WriteLine($"{b.Id}  {b.ModifiedUtc:O}  {b.Bytes} bytes");
+            break;
+        case "restore" when args.Length == 3:
+            Console.WriteLine("This replaces the default world directory. The server must be stopped. A recovery backup will be created first. Type RESTORE to continue:");
+            if (Console.ReadLine() != "RESTORE") throw new InvalidOperationException("Restore cancelled.");
+            var recovery = await backups.RestoreAsync(Id(1), Id(2), cancel.Token);
+            Console.WriteLine(recovery is null ? "World restored; no previous world existed." : $"World restored; recovery backup: {recovery}"); break;
+        case "delete-backup" when args.Length == 3:
+            Console.WriteLine("This permanently deletes the selected backup. Type DELETE to continue:");
+            if (Console.ReadLine() != "DELETE") throw new InvalidOperationException("Deletion cancelled.");
+            await backups.DeleteAsync(Id(1), Id(2), cancel.Token); Console.WriteLine("Backup deleted."); break;
         default: Console.Error.WriteLine(usage); return 2;
     }
     return 0;
