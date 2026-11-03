@@ -44,7 +44,7 @@ With a stopped server and its default `world/level.dat` present, run `dotnet run
 
 ## Packaging and uninstall
 
-CI built a self-contained `linux-x64` preview artifact with SHA-256 in [this run](https://github.com/cfspearn81-code/MinecraftHostingProgam/actions/runs/41666453944). It is not a tested desktop release; download it from the run artifacts if you have access. Alternatively:
+CI built a self-contained `linux-x64` preview artifact with SHA-256 in [this run](https://github.com/cfspearn81-code/MinecraftHostingProgam/actions/runs/41666778179). It is not a tested desktop release; download it from the run artifacts if you have access. Alternatively:
 
 ```sh
 mkdir -p artifacts/harbor
