@@ -3,6 +3,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      verify_download:
+        description: Download and verify a real vanilla JAR (no EULA acceptance or server start)
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -30,3 +35,30 @@ jobs:
           path: |
             harbor-linux-x64.tar.gz
             harbor-linux-x64.tar.gz.sha256
+  live-download:
+    if: (github.event_name == 'workflow_dispatch' && inputs.verify_download) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[live-download]'))
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.402
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Resolve Mojang metadata and verify the real server JAR
+        env:
+          XDG_DATA_HOME: ${{ runner.temp }}/harbor-live-download
+        run: |
+          set -eu
+          dotnet run --project tools/Harbor.Cli -c Release -- java
+          dotnet run --project tools/Harbor.Cli -c Release -- create 'Download test' 1.21.1 java 1024 25565
+          id=$(dotnet run --project tools/Harbor.Cli -c Release -- list | awk 'NR==1 {print $1}')
+          test -n "$id"
+          dotnet run --project tools/Harbor.Cli -c Release -- install "$id"
+          test -s "$XDG_DATA_HOME/harbor/servers/$id/server.jar"
+          test ! -e "$XDG_DATA_HOME/harbor/servers/$id/eula.txt"
+      - name: Remove downloaded test data
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/harbor-live-download"
