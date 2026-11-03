@@ -1,12 +1,12 @@
 # Release report — not a release
 
-## Implemented in source (unverified)
+## Implemented in source (built; live hosting unverified)
 
-Local server definitions with GUID folders and atomic JSON, catalog port uniqueness on creation, Java discovery in PATH/JAVA_HOME and /usr/lib/jvm, Mojang release metadata and SHA-1-verified server download, explicit per-server EULA prompt, single-server foreground process runner with redirected console streams, readiness and graceful stop, PID/start-time survivor check, per-server lock, and a read-only Avalonia inventory. Multiple separate CLI invocations are intended to run independent servers. Fixture checks are provided but have not been executed locally.
+Local server definitions with GUID folders and atomic JSON, catalog port uniqueness on creation, Java discovery in PATH/JAVA_HOME and /usr/lib/jvm, Mojang release metadata and SHA-1-verified server download, explicit per-server EULA prompt, single-server foreground process runner with redirected console streams, readiness and graceful stop, PID/start-time survivor check, per-server lock, and a read-only Avalonia inventory. Multiple separate CLI invocations are intended to run independent servers. Fixture checks passed in GitHub Actions, not locally.
 
 ## Verification
 
-Environment: Debian 12 x86-64 sandbox, no desktop session, .NET SDK or Java. No Kubuntu version, KDE, display backend, Minecraft version, loader, or Java version tested. `dotnet restore`, build, test, publish, Java and live server execution could not be run. Outbound access to NuGet, Microsoft SDK downloads and Mojang was unavailable. CI may provide independent build evidence; check its actual run. No screenshots or binaries were generated in this environment. No live EULA acceptance occurred. A container/CI build is not Kubuntu desktop verification.
+Environment: Debian 12 x86-64 sandbox, no desktop session, .NET SDK or Java. No Kubuntu version, KDE, display backend, Minecraft version, loader, or Java version tested. Local `dotnet restore`, build, test, publish, Java and live server execution could not be run. Outbound access to NuGet, Microsoft SDK downloads and Mojang was unavailable. GitHub Actions [run 41665050637](https://github.com/cfspearn81-code/MinecraftHostingProgam/actions/runs/41665050637) on ubuntu-24.04 passed restore, Release build, the fixture executable, and self-contained linux-x64 publishing at commit 5974d3b. The uploaded preview artifact was not runnable or downloadable in the sandbox because its Azure blob host was blocked; it has not been tested on a desktop. CI emitted Node 20 action deprecation warnings. No screenshots or binaries were generated locally. No live EULA acceptance occurred. A container/CI build is not Kubuntu desktop verification.
 
 ## Not implemented or not verified
 

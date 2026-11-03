@@ -43,13 +43,14 @@ public sealed class ServerRunner(ServerStore store)
         catch (SocketException ex) { throw new InvalidOperationException($"Port {server.Port} is unavailable: {ex.Message}", ex); }
         var start = new ProcessStartInfo(server.JavaExecutable) { WorkingDirectory = dir, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
         start.ArgumentList.Add($"-Xmx{server.MemoryMiB}M"); start.ArgumentList.Add("-jar"); start.ArgumentList.Add("server.jar"); start.ArgumentList.Add("nogui");
+        // Open the log before starting Java so an inaccessible log cannot orphan a new child.
+        await using var log = new StreamWriter(new FileStream(Path.Combine(dir, "harbor-console.log"), FileMode.Append, FileAccess.Write, FileShare.Read, 4096, true)) { AutoFlush = true };
         using var child = Process.Start(start) ?? throw new IOException("Java did not start.");
         try { await ServerStore.AtomicWriteAsync(ProcessOwnership.PathFor(dir), JsonSerializer.Serialize(new ProcessRecord(child.Id, child.StartTime.ToUniversalTime().Ticks)), CancellationToken.None); }
         catch { if (!child.HasExited) { child.Kill(); await child.WaitForExitAsync(); } throw; }
         var ready = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var response = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var logGate = new SemaphoreSlim(1, 1);
-        await using var log = new StreamWriter(new FileStream(Path.Combine(dir, "harbor-console.log"), FileMode.Append, FileAccess.Write, FileShare.Read, 4096, true)) { AutoFlush = true };
         async Task DrainAsync(StreamReader reader, string source)
         {
             string? line;
@@ -104,7 +105,11 @@ public sealed class ServerRunner(ServerStore store)
             {
                 try { await child.StandardInput.WriteLineAsync("stop"); } catch (IOException) { }
                 var stopped = await Task.WhenAny(exited, Task.Delay(TimeSpan.FromSeconds(60)));
-                if (stopped != exited) Console.Error.WriteLine($"Graceful stop timed out. PID {child.Id} may still be running; ownership record retained. Inspect it before taking action.");
+                if (stopped != exited)
+                {
+                    Console.Error.WriteLine($"Graceful stop has taken more than 60 seconds. Still supervising owned PID {child.Id}; do not close this terminal. Inspect server output. No automatic force-stop is performed.");
+                    await exited;
+                }
             }
             if (child.HasExited)
             {

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-case "$HERE" in *'"'*|*'`'*|*'$'*|*'\\'*|*'%'*|*'
+case "$HERE" in *'"'*|*'`'*|*'$'*|*'\'*|*'%'*|*'
 '*) echo "Install path contains a character unsupported by this installer; move the release to a simpler path." >&2; exit 1;; esac
 DATA=${XDG_DATA_HOME:-"$HOME/.local/share"}
 mkdir -p "$DATA/applications" "$DATA/icons/hicolor/scalable/apps"
